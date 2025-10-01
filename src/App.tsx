@@ -1,5 +1,3 @@
-import { useState } from "react";
-import "./App.css";
 import { Typography } from "./Typography";
 
 function App() {
