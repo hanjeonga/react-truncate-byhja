@@ -7,31 +7,34 @@ type BaseTextProps = {
   color?: string;
   style?: React.CSSProperties;
   truncateText?: string;
-  countSpaces?: boolean; // 띄어쓰기/줄바꿈 포함 여부 (기본 true)
+  countSpaces?: boolean;
 };
 
-// 글자 수 제한 모드
 type LengthProps = BaseTextProps & {
-  viewLength: number;
+  viewLength?: number;
   viewLine?: never;
   width?: never;
 };
 
-// 줄 수 제한 모드
 type LineProps = BaseTextProps & {
-  viewLine: number;
-  width: number | string; // ✅ 필수
+  viewLine?: number;
+  width?: number | string;
   viewLength?: never;
 };
 
-// 제한 없는 기본 모드
+type BothProps = BaseTextProps & {
+  viewLength: number;
+  viewLine: number;
+  width: number | string;
+};
+
 type DefaultProps = BaseTextProps & {
   viewLength?: never;
   viewLine?: never;
   width?: never;
 };
 
-export type TextProps = LengthProps | LineProps | DefaultProps;
+export type TextProps = LengthProps | LineProps | BothProps | DefaultProps;
 
 export const Typography: React.FC<TextProps> = ({
   children = "기본 텍스트입니다.",
@@ -47,18 +50,16 @@ export const Typography: React.FC<TextProps> = ({
 }) => {
   let displayText = children;
 
-  // 글자수 제한 모드
+  // 글자 수 제한 적용
   if (viewLength) {
-    // 스페이스/줄바꿈/탭 제거 후 길이 계산
     const targetText = countSpaces
       ? children
-      : children.replace(/[\s\n\r\t]/g, ""); // ✅ 공백류 제거
+      : children.replace(/[\s\n\r\t]/g, "");
 
     if (targetText.length > viewLength) {
       let cutLength = viewLength;
 
       if (!countSpaces) {
-        // 실제 children에서 index 찾아내기
         let count = 0;
         let realIndex = 0;
         while (count < viewLength && realIndex < children.length) {
@@ -80,7 +81,7 @@ export const Typography: React.FC<TextProps> = ({
     color,
     overflow: "hidden",
     textOverflow: "ellipsis",
-    whiteSpace: viewLength ? "nowrap" : undefined,
+    whiteSpace: viewLength && !viewLine ? "nowrap" : undefined,
     display: viewLine ? "-webkit-box" : "inline-block",
     ...(viewLine
       ? {
